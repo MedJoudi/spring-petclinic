@@ -1,6 +1,13 @@
 # azure-pipelines.yml
 
-trigger: none 
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - src/*  # Trigger on changes to any file in the 'src' directory
+      - README.md  # Trigger on changes to the README.md file
 
 resources:
   repositories:
@@ -9,14 +16,7 @@ resources:
       name: MedJoudi/spring-petclinic
       endpoint: GitHubConnection
       ref: main  # Default branch to use
-      trigger:
-        branches:
-          include:
-            - main
-        paths:
-          include:
-            - src/*  # Trigger on changes to any file in the 'src' directory
-            - README.md  # Trigger on changes to the README.md file
+
 
 
 # Use a hosted agent with Java 17
