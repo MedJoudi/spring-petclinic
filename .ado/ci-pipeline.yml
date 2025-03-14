@@ -64,21 +64,13 @@ steps:
     inputs:
       summaryFileLocation: '$(Build.SourcesDirectory)/target/site/jacoco/jacoco.xml'
       pathToSources: '$(Build.SourcesDirectory)/src/main/java'
-  # DEBUG
-  - script: |
-      ls -la target/
-    displayName: 'List Target Directory'
 
   # Copy the .jar file to the artifact staging directory
   - script: |
       mkdir -p $(Build.ArtifactStagingDirectory)
-      cp /target/*.jar $(Build.ArtifactStagingDirectory)/
+      cp target/*.jar $(Build.ArtifactStagingDirectory)/
     displayName: 'Copy JAR to Artifact Staging Directory'
 
-  # DEBUG
-  - script: |
-      ls -la $(Build.ArtifactStagingDirectory)
-    displayName: 'List Artifact Staging Directory'
 
   # Publish the .jar file as a build artifact
   - task: PublishBuildArtifacts@1
