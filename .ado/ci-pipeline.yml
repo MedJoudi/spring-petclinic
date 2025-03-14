@@ -1,0 +1,84 @@
+# azure-pipelines.yml
+
+trigger: none 
+
+resources:
+  repositories:
+    - repository: spring-petclinic
+      type: github
+      name: MedJoudi/spring-petclinic
+      endpoint: GitHubConnection
+      ref: main  # Default branch to use
+      trigger:
+        branches:
+          include:
+            - main  # Trigger on changes to the 'main' branch
+
+
+# Use a hosted agent with Java 17
+pool:
+  vmImage: 'ubuntu-latest'
+
+# Cache Maven dependencies to speed up builds
+variables:
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+
+steps:
+  # Checkout the code
+  - checkout: spring-petclinic
+
+  # Set up Java 17
+  - task: JavaToolInstaller@1
+    inputs:
+      versionSpec: '17'
+      jdkArchitectureOption: 'x64'
+      jdkSourceOption: 'PreInstalled'
+
+  # Restore Maven dependencies from cache (if available)
+  - task: Cache@2
+    inputs:
+      key: 'maven | "$(Agent.OS)" | pom.xml'
+      restoreKeys: |
+        maven | "$(Agent.OS)"
+      path: $(MAVEN_CACHE_FOLDER)
+
+  # Build the project and run tests
+  - script: |
+      mvn clean install
+    displayName: 'Build and Test'
+
+  # Publish test results
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '**/surefire-reports/TEST-*.xml'
+      testRunTitle: 'Unit Tests'
+      failTaskOnFailedTests: true
+
+  # Publish JaCoCo code coverage report
+  - task: PublishCodeCoverageResults@2
+    inputs:
+      summaryFileLocation: '$(Build.SourcesDirectory)/target/site/jacoco/jacoco.xml'
+      pathToSources: '$(Build.SourcesDirectory)/src/main/java'
+  # DEBUG
+  - script: |
+      ls -la target/
+    displayName: 'List Target Directory'
+
+  # Copy the .jar file to the artifact staging directory
+  - script: |
+      mkdir -p $(Build.ArtifactStagingDirectory)
+      cp /target/*.jar $(Build.ArtifactStagingDirectory)/
+    displayName: 'Copy JAR to Artifact Staging Directory'
+
+  # DEBUG
+  - script: |
+      ls -la $(Build.ArtifactStagingDirectory)
+    displayName: 'List Artifact Staging Directory'
+
+  # Publish the .jar file as a build artifact
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'pet-clinic'
+      publishLocation: 'Container'
