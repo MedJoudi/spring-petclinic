@@ -286,6 +286,26 @@
         <groupId>org.cyclonedx</groupId>
         <artifactId>cyclonedx-maven-plugin</artifactId>
       </plugin>
+      
+      <!-- ===== Add JIB Plugin Here ===== -->
+      <plugin>
+            <groupId>com.google.cloud.tools</groupId>
+            <artifactId>jib-maven-plugin</artifactId>
+            <version>3.4.0</version>
+            <configuration>
+                <from>
+                    <image>eclipse-temurin:17-jre</image> <!-- Lightweight JRE -->
+                </from>
+                <to>
+                    <image>${docker.image.prefix}/${project.artifactId}:${project.version}</image>
+                </to>
+                <container>
+                    <ports>
+                        <port>8080</port> <!-- Spring Boot default port -->
+                    </ports>
+                </container>
+            </configuration>
+      </plugin>
 
     </plugins>
   </build>
